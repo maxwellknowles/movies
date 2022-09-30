@@ -1,7 +1,6 @@
 #requirements
 pandas
 streamlit
-random
 st_aggrid
 statistics
 sqlalchemy
