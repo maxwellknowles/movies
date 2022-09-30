@@ -4,4 +4,3 @@ streamlit
 statistics
 sqlalchemy
 streamlit-aggrid
-psycopg2
