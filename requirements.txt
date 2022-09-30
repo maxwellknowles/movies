@@ -3,5 +3,4 @@ pandas
 streamlit
 statistics
 sqlalchemy
-re
 streamlit-aggrid
