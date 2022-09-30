@@ -2,9 +2,6 @@
 import pandas as pd
 import streamlit as st
 import random
-from gspread_pandas import Spread,Client
-import gspread
-from google.oauth2 import service_account
 from st_aggrid import AgGrid
 import re
 from statistics import mode
