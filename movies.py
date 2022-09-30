@@ -2,7 +2,6 @@
 import pandas as pd
 import streamlit as st
 import random
-from st_aggrid import AgGrid
 import re
 from statistics import mode
 from sqlalchemy import *
@@ -77,7 +76,7 @@ genres = set(genres)
 
 st.header("The Ultimate Group Movie-Choosing Algorithm")
 st.subheader("The Repository")
-AgGrid(dataset)
+st.dataframe(dataset)
 st.caption("Your group's responses will allow the app to narrow the data")
 st.subheader("Let's do this...")
 action = st.selectbox("Do you want to start a group movie-choosing experience or participate in one?", ("Initiate", "Join"))
@@ -154,7 +153,7 @@ if action == "Initiate":
                 st.write("Here's your group's set of recommendations!")
                 for i in range(len(dataset)):
                     st.caption(dataset["movie_title"][i])
-                AgGrid(dataset)
+                st.dataframe(dataset)
 
         else: 
             pass
@@ -234,7 +233,7 @@ else:
                 st.write("Here's your group's set of recommendations!")
                 for i in range(len(dataset)):
                     st.caption(dataset["movie_title"][i])
-                AgGrid(dataset)
+                st.dataframe(dataset)
 
         else:
             st.write("Looks like that code doesn't exist :(")
