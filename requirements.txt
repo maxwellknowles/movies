@@ -1,7 +1,6 @@
 #requirements
 pandas
 streamlit
-st_aggrid
 statistics
 sqlalchemy
 time
