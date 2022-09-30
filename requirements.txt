@@ -6,3 +6,4 @@ statistics
 sqlalchemy
 time
 re
+streamlit-aggrid
