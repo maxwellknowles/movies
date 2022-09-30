@@ -5,7 +5,7 @@ import random
 import st_aggrid as AgGrid
 import re
 from statistics import mode
-from sqlalchemy import *
+import sqlalchemy as db
 import time
 import psycopg2
 
@@ -19,10 +19,10 @@ password = st.secrets["postgres"]["password"]
 host = st.secrets["postgres"]["host"]
 database = st.secrets["postgres"]["database"]
 conn_str = f"postgresql://{user}:{password}@{host}/{database}"
-engine = create_engine(conn_str)
-connection = engine.connect()
-metadata = MetaData()
-user_codes_pg = Table('user_codes', metadata, autoload=True, autoload_with=engine)
+engine = db.create_engine(conn_str)
+connection = db.engine.connect()
+metadata = db.MetaData()
+user_codes_pg = db.Table('user_codes', metadata, autoload=True, autoload_with=engine)
 user_codes = select([user_codes_pg]) 
 ResultProxy = connection.execute(user_codes)
 ResultSet = ResultProxy.fetchall()
