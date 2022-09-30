@@ -2,37 +2,13 @@
 import pandas as pd
 import streamlit as st
 import random
-import st_aggrid as AgGrid
-import re
+from st_aggrid import AgGrid
 from statistics import mode
-import sqlalchemy as db
+from sqlalchemy import *
 import time
 
 st.set_page_config(page_title="Movies", page_icon=":camera:", layout="wide",initial_sidebar_state="expanded")
 
-#function to load user submission data
-#@st.cache(ttl=60, hash_funcs=True, suppress_st_warning=True, allow_output_mutation=True)
-#def get_codes():
-user = st.secrets["postgres"]["user"]
-password = st.secrets["postgres"]["password"]
-host = st.secrets["postgres"]["host"]
-database = st.secrets["postgres"]["database"]
-conn_str = f"postgresql://{user}:{password}@{host}/{database}"
-engine = db.create_engine(conn_str)
-connection = db.engine.connect()
-metadata = db.MetaData()
-user_codes_pg = db.Table('user_codes', metadata, autoload=True, autoload_with=engine)
-user_codes = select([user_codes_pg]) 
-ResultProxy = connection.execute(user_codes)
-ResultSet = ResultProxy.fetchall()
-user_codes_table = pd.DataFrame(ResultSet, columns=["code", "email"])
-#    return user_codes_table
-#codes = get_codes()
-#codes
-
-#function to load code data
-#@st.cache(ttl=60, hash_funcs=True, suppress_st_warning=True, allow_output_mutation=True)
-#def get_submissions():
 user = st.secrets["postgres"]["user"]
 password = st.secrets["postgres"]["password"]
 host = st.secrets["postgres"]["host"]
@@ -41,15 +17,18 @@ conn_str = f"postgresql://{user}:{password}@{host}/{database}"
 engine = create_engine(conn_str)
 connection = engine.connect()
 metadata = MetaData()
-user_submits_pg = Table('user_submissions', metadata, autoload=True, autoload_with=engine)
 
+user_codes_pg = Table('user_codes', metadata, autoload=True, autoload_with=engine)
+user_codes = select([user_codes_pg]) 
+ResultProxy = connection.execute(user_codes)
+ResultSet = ResultProxy.fetchall()
+user_codes_table = pd.DataFrame(ResultSet, columns=["code", "email"])
+
+user_submits_pg = Table('user_submissions', metadata, autoload=True, autoload_with=engine)
 user_submits = select([user_submits_pg]) 
 ResultProxy = connection.execute(user_submits)
 ResultSet = ResultProxy.fetchall()
 user_submits_table = pd.DataFrame(ResultSet, columns=["code", "email", "color","language","genre","score", "id"])
-#    return user_submits_table
-#submissions = get_submissions()
-#submissions
 
 #function to load movie repo data
 @st.cache(suppress_st_warning=True, allow_output_mutation=True)
@@ -103,7 +82,7 @@ if action == "Initiate":
 
             if st.button("Submit"):
                 #Inserting new record
-                query = insert(user_submits_pg).values(user_code=code, user_email=email, color=color, language=language, genre=genre, score=score) 
+                query = insert(user_submits_pg).values(user_code=str(code), user_email=email, color=color, language=language, genre=genre, score=score,id=str(code)+"-"+email) 
                 ResultProxy = connection.execute(query)
                 st.success("Nice!")
 
@@ -113,26 +92,25 @@ if action == "Initiate":
                 ResultSet = ResultProxy.fetchall()
                 user_submits_table = pd.DataFrame(ResultSet, columns=["code","email","color","language","genre","score","id"])
                 movies = user_submits_table
-                movies = movies[(movies["code"]==code)]
+                movies = movies[(movies["code"]==str(code))]
+                movies = movies.reset_index(drop=True)
                 st.write("We've received "+str(len(movies))+" submissions for your group so far.")
 
                 color = movies["color"].mode()[0]
                 language = movies["language"].mode()[0]
                 genre = []
                 for i in range(len(movies)):
-                    string = re.sub(r"[[\]]",'',movies["genre"][i])
-                    split = string.split(",")
-                    genre += split
+                    genre += movies["genre"][i]
                 genre = mode(genre)
-                genre = genre.strip("\'")
                 score = movies["score"].mean()
-
                 st.write("Starting with "+str(len(dataset))+" movies...")
                 for i in range(0,len(dataset)):
                     if genre not in dataset["genres"][i]:
                         dataset = dataset.drop(labels=i, axis=0)
                     else:
                         pass
+                with st.spinner('Filtering by genre...'):
+                    time.sleep(3)    
                 st.write("Genre preferences filtered down to "+str(len(dataset))+"...")
                 dataset = dataset.reset_index(drop=True)
 
@@ -140,16 +118,22 @@ if action == "Initiate":
                     dataset = dataset[(dataset["color"]==color)]
                 else:
                     pass
+                with st.spinner('Filtering by color...'):
+                    time.sleep(1)
                 if len(dataset) > 5:
                     dataset = dataset[(dataset["language"]==language)]
                 else:
                     pass
+                with st.spinner('Filtering by language...'):
+                    time.sleep(1)
                 if len(dataset) > 5:
                     dataset = dataset[(dataset["imdb_score"]>=score)]
                 else:
                     pass
                 dataset = dataset.reset_index(drop=True)
-                st.write("Other preferences resulting in "+str(len(dataset))+" option(s)...")
+                with st.spinner('Filtering by IMDB score...'):
+                    time.sleep(1)
+                st.write("Preferences resulting in "+str(len(dataset))+" option(s)...")
                 
                 st.write("Here's your group's set of recommendations!")
                 for i in range(len(dataset)):
@@ -189,6 +173,7 @@ else:
                 user_submits_table = pd.DataFrame(ResultSet, columns=["code","email","color","language","genre","score","id"])
                 movies = user_submits_table
                 movies = movies[(movies["code"]==code_entry)]
+                movies = movies.reset_index(drop=True)
                 st.write("We've received "+str(len(movies))+" submissions for your group so far.")
 
                 color = movies["color"].mode()[0]
@@ -197,7 +182,6 @@ else:
                 for i in range(len(movies)):
                     genre += movies["genre"][i]
                 genre = mode(genre)
-                genre = genre.strip("\'")
                 score = movies["score"].mean()
                 st.write("Starting with "+str(len(dataset))+" movies...")
                 for i in range(0,len(dataset)):
@@ -238,5 +222,3 @@ else:
 
         else:
             st.write("Looks like that code doesn't exist :(")
-
-        
