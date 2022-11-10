@@ -6,6 +6,7 @@ from st_aggrid import AgGrid
 from statistics import mode
 from sqlalchemy import *
 import time
+import psycopg2
 
 st.set_page_config(page_title="Movies", page_icon=":camera:", layout="wide",initial_sidebar_state="expanded")
 
