@@ -156,6 +156,36 @@ else:
     
     if code_entry:
         if code_entry in list(codes["code"]):
+            st.write("Current movie selections based on existing responses...")
+            with st.spinner('One moment...'):
+                time.sleep(3) 
+            color = movies["color"].mode()[0]
+            language = movies["language"].mode()[0]
+            genre = []
+            for i in range(len(movies)):
+                genre += movies["genre"][i]
+            genre = mode(genre)
+            score = movies["score"].mean()
+            for i in range(0,len(dataset)):
+                if genre not in dataset["genres"][i]:
+                    dataset = dataset.drop(labels=i, axis=0)
+                else:
+                    pass
+            dataset = dataset.reset_index(drop=True)
+            if len(dataset) > 5:
+                dataset = dataset[(dataset["color"]==color)]
+            else:
+                pass
+            if len(dataset) > 5:
+                dataset = dataset[(dataset["language"]==language)]
+            else:
+                pass
+            if len(dataset) > 5:
+                dataset = dataset[(dataset["imdb_score"]>=score)]
+            else:
+                pass
+            dataset = dataset.reset_index(drop=True)
+            AgGrid(dataset)
             color = st.selectbox("filter by color",list(dataset.color.unique()))
             language = st.selectbox("filter by language",list(dataset.language.unique()))
             genre = st.multiselect("select genres",genres)
@@ -217,8 +247,6 @@ else:
                 st.write("Preferences resulting in "+str(len(dataset))+" option(s)...")
                 
                 st.write("Here's your group's set of recommendations!")
-                for i in range(len(dataset)):
-                    st.caption(dataset["movie_title"][i])
                 AgGrid(dataset)
 
         else:
