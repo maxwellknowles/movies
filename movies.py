@@ -57,7 +57,7 @@ genres = set(genres)
 
 st.header("The Ultimate Group Movie-Choosing Algorithm")
 st.subheader("The Repository")
-AgGrid(dataset)
+st.dataframe(dataset)
 st.caption("Your group's responses will allow the app to narrow the data")
 st.subheader("Let's do this...")
 action = st.selectbox("Do you want to start a group movie-choosing experience or participate in one?", ("Initiate", "Join"))
